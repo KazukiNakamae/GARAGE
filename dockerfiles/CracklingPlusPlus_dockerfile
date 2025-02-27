@@ -18,11 +18,31 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# ViennaRNAパッケージ（RNAfoldを含む）のインストール
-RUN apt-get update && apt-get install -y \
-    viennarna \
+# ViennaRNAパッケージ（RNAfoldを含む）のインストール - 方法1: パッケージマネージャ
+RUN apt-get update && \
+    apt-get install -y vienna-rna || \
+    (echo "Vienna RNA package not found in repositories, trying alternative installation..." && \
+    # 方法2: ソースからのインストール（方法1が失敗した場合）
+    apt-get install -y \
+        build-essential \
+        wget \
+        libgsl-dev \
+        libmpfr-dev \
+        perl \
+        python3-dev \
+        automake \
+        libtool \
+        pkg-config \
+    && cd /tmp \
+    && wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_5_x/ViennaRNA-2.5.1.tar.gz \
+    && tar -xzf ViennaRNA-2.5.1.tar.gz \
+    && cd ViennaRNA-2.5.1 \
+    && ./configure --without-perl --without-python \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig) \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/*
 
 # CracklingPlusPlusのクローンとビルド
 WORKDIR /app
