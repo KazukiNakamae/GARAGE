@@ -1,6 +1,8 @@
-FROM --platform=linux/amd64 condaforge/miniforge3:24.11.3-0
-ARG AZIMUTH_VER="2.0"
+ARG PLATFORM=linux/amd64
 
-RUN pip install azimuth==${AZIMUTH_VER} --no-cache-dir
+FROM --platform=${PLATFORM} condaforge/miniforge3:24.11.3-0
+
+RUN pip install --upgrade pip && \
+    pip install azimuth==2.0 --no-cache-dir
+
 WORKDIR /work
-
