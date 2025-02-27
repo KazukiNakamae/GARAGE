@@ -1,0 +1,43 @@
+# Use miniforge3 as base image (includes conda)
+FROM condaforge/miniforge3:latest
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ViennaRNA and Python packages via conda
+RUN conda create -n DeepCRISTL python==3.6.13 viennarna=2.4.5 pip -c bioconda
+SHELL ["conda", "run", "-n", "DeepCRISTL", "/bin/bash", "-c"]
+RUN echo "conda activate DeepCRISTL" >> ~/.bashrc
+
+# Set working directory
+WORKDIR /app
+
+# Clone repository
+RUN git clone https://github.com/OrensteinLab/DeepCRISTL.git . && \
+    mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+# Install Python dependencies via conda and pip
+RUN conda install -y -c conda-forge \
+    'numpy>=1.14.0,<1.15' \
+    'scipy>=1.0.0,<1.1' \
+    'h5py>=2.7.1,<2.8' \
+    'scikit-learn>=0.19.1,<0.20' \
+    'biopython>=1.71,<1.72' \
+    'matplotlib' \
+    'panda's && \
+    pip install \
+    'tensorflow==1.8.0' \
+    'keras==2.1.6' \
+    'cutadapt>=1.18,<1.19' \
+    'DotMap' \
+    'GPyOpt'
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Default command (show help)
+CMD ["python", "main.py", "--help"]
