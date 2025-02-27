@@ -1,0 +1,38 @@
+FROM tensorflow/tensorflow:2.9.1-gpu
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    graphviz \
+    graphviz-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV TF_FORCE_GPU_ALLOW_GROWTH=true
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
+# Install Python packages
+RUN pip install --no-cache-dir \
+    pyyaml==6.0 \
+    pandas==1.4.3 \
+    numpy==1.22.3 \
+    scikit-learn==1.1.1 \
+    matplotlib==3.5.1 \
+    pydot==1.4.2 \
+    pydotplus==2.0.2 \
+    biopython==1.78
+
+# Install git
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Clone repository
+RUN git clone https://github.com/ucrbioinfo/deepguide_reborn.git . && \
+    mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+# Default command
+CMD ["python", "-u", "src/main.py"]
+
