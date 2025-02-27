@@ -1,0 +1,8 @@
+ARG PLATFORM=linux/amd64
+
+FROM --platform=${PLATFORM} condaforge/miniforge3:24.11.3-0
+
+RUN pip install --upgrade pip && \
+    pip install azimuth==2.0 --no-cache-dir
+
+WORKDIR /work
