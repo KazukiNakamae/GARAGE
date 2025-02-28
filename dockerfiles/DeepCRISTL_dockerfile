@@ -1,5 +1,4 @@
-# Use miniforge3 as base image (includes conda)
-FROM condaforge/miniforge3:latest
+FROM condaforge/miniforge3:24.11.3-0
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
