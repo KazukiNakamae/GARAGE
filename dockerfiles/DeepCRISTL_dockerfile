@@ -26,17 +26,21 @@ RUN conda install -y -c conda-forge \
     'scikit-learn>=0.19.1,<0.20' \
     'biopython>=1.71,<1.72' \
     'matplotlib' \
-    'panda's && \
-    pip install \
-    'tensorflow==1.8.0' \
+    'pandas'
+
+RUN conda clean -y -a
+RUN pip install 'tensorflow==1.8.0' \
     'keras==2.1.6' \
     'cutadapt>=1.18,<1.19' \
     'DotMap' \
-    'GPyOpt'
+    'GPyOpt' --no-cache-dir
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+
+ENV CONDA_DEFAULT_ENV=DeepCRISTL
+ENV PATH=/opt/conda/envs/DeepCRISTL/bin:$PATH
 
 # Default command (show help)
 CMD ["python", "main.py", "--help"]

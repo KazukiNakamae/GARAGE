@@ -8,25 +8,14 @@ fi
 
 # Build the Docker image
 echo "Building DeepCRISTL Docker image..."
-docker build -t deepcristl:latest -f ./dockerfiles/DeepCRISTL_dockerfile .
+docker build -t garagecollection/deepcristl:1.0 -f ./dockerfiles/DeepCRISTL_dockerfile .
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
     echo -e "\nDeepCRISTL Docker image built successfully!"
     echo -e "\nTo run DeepCRISTL:"
-    echo "docker run -it --rm \\"
-    echo "    -v \$(pwd)/output:/app/output \\"
-    echo "    deepcristl:latest"
-    echo -e "\nTo run a specific Python script:"
-    echo "docker run -it --rm \\"
-    echo "    -v \$(pwd)/output:/app/output \\"
-    echo "    deepcristl:latest \\"
-    echo "    python your_script.py"
-    echo -e "\nTo start an interactive shell:"
-    echo "docker run -it --rm \\"
-    echo "    -v \$(pwd)/output:/app/output \\"
-    echo "    deepcristl:latest \\"
-    echo "    /bin/bash"
+    echo "docker run --rm -it -v $(pwd)/output:/app/output garagecollection/deepcristl:1.0 python /app/CRISPROn/tool.py"
+    echo ""
 else
     echo "Error: Failed to build Docker image"
     exit 1
