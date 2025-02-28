@@ -1,0 +1,32 @@
+FROM condaforge/miniforge3:24.11.3-0
+
+# Clone repository
+RUN git clone https://github.com/lyotvincent/CRISPR-M.git /app/CRISPR-M && \
+    mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    git gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN conda create -n CRISPR-M python==3.8
+SHELL ["conda", "run", "-n", "CRISPR-M", "/bin/bash", "-c"]
+RUN echo "conda activate CRISPR-M" >> ~/.bashrc
+
+RUN conda clean -y -a
+
+# Install Python dependencies via conda and pip
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir \
+    'tensorflow==2.9' \
+    'keras==2.9' \
+    'pandas==1.4' \
+    'numpy==1.22' \
+    'scikit-learn==1.1' \
+    'matplotlib==3.5' \
+    'seaborn==0.11'
+
+ENV CONDA_DEFAULT_ENV=CRISPR-M
+ENV PATH=/opt/conda/envs/CRISPR-M/bin:$PATH
