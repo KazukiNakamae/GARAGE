@@ -1,0 +1,25 @@
+FROM condaforge/miniforge3:24.11.3-0
+
+RUN git clone https://github.com/Peppags/CRISPRont-CRISPRofft.git /app/crispr
+WORKDIR /app/crispr
+
+RUN conda create -n CRISPRont-CRISPRofft python==3.8.4
+SHELL ["conda", "run", "-n", "CRISPRont-CRISPRofft", "/bin/bash", "-c"]
+
+RUN pip install --upgrade pip
+RUN pip install -r /app/crispr/requirements.txt --no-cache-dir
+RUN pip uninstall tensorflow -y
+
+RUN conda install tensorflow
+
+RUN echo "conda activate CRISPRont-CRISPRofft" >> ~/.bashrc
+RUN echo "conda activate CRISPRont-CRISPRofft" >> ~/.zshrc
+
+RUN mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+WORKDIR /app/output
+ENV CONDA_DEFAULT_ENV=CRISPRont-CRISPRofft
+ENV PATH=/opt/conda/envs/CRISPRont-CRISPRofft/bin:$PATH
+
+#CMD ["python", "/app/crispr/crispr_ont_prediction.py"]
