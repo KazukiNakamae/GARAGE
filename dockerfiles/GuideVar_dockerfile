@@ -1,0 +1,30 @@
+FROM condaforge/miniforge3:24.11.3-0
+
+# Set working directory
+WORKDIR /app
+
+ENV SHELL=bash
+
+RUN ln -s /bin/tar /bin/gtar
+
+RUN git clone https://github.com/MDhewei/GuideVar.git /tmp/GuideVar
+RUN mv /tmp/GuideVar/GuideVar /GuideVar
+RUN rm -r /tmp/GuideVar
+
+RUN ls /GuideVar/data
+RUN ls /GuideVar/models
+
+RUN mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+RUN conda config --add channels defaults && \
+    conda config --add channels conda-forge && \
+    conda config --add channels bioconda
+RUN conda install r-base viennarna -c bioconda && \
+    conda clean -afy
+
+RUN pip install --upgrade pip
+RUN pip install keras tensorflow biopython pandas numpy scipy seaborn --no-cache-dir
+
+WORKDIR /app/output
+ENTRYPOINT ["python", "/GuideVar/guidevar_entry.py"]
