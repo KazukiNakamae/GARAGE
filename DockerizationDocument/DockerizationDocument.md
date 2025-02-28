@@ -2,7 +2,7 @@
 
 ## 1. 概要
 
-この手順書では、バイオインフォマティクスツールをDocker化する方法について説明します。Docker化により、環境依存性を排除し、どのようなシステムでも一貫した挙動でツールを実行できるようになります。また、Docker Desktop 4.33以降で導入された「Docker build check」機能を活用し、ベストプラクティスに基づいたDockerfileの作成方法も紹介します。
+この手順書では、バイオインフォマティクスツールをDocker化する方法について説明します。Docker化により、環境依存性を排除し、どのようなシステムでも一貫した挙動でツールを実行できるようになります。
 
 ## 2. 前提条件
 
@@ -381,18 +381,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
       - name: Docker Build Check
         run: docker build . --check -f ./scripts/TOOL_NAME_dockerfile
       
       - name: Build Docker image
         run: ./scripts/TOOL_NAME_build.sh
-      
+
       - name: Test Docker image
         run: docker run --rm tool-name:latest COMMAND_NAME -h
 ```
 
 ## 9. まとめ
+
 
 このドキュメントに従うことで、バイオインフォマティクスツールを効率的にDocker化し、異なる環境でも一貫して動作させることができます。Docker化により、依存関係の管理、インストールの複雑さ、環境差異による問題が大幅に軽減されます。特に、Docker build check機能を活用することで、Dockerfileの品質を向上させ、潜在的な問題や最適化の機会を早期に発見することができます。
 

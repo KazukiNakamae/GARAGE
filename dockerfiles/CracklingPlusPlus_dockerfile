@@ -1,0 +1,64 @@
+FROM ubuntu:22.04
+
+# 対話型プロンプトを抑制
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Tokyo
+
+# パッケージの更新と依存関係のインストール
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    libboost-all-dev \
+    bowtie2 \
+    unzip \
+    python3 \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ViennaRNAパッケージ（RNAfoldを含む）のインストール - 方法1: パッケージマネージャ
+RUN apt-get update && \
+    apt-get install -y vienna-rna || \
+    (echo "Vienna RNA package not found in repositories, trying alternative installation..." && \
+    # 方法2: ソースからのインストール（方法1が失敗した場合）
+    apt-get install -y \
+        build-essential \
+        wget \
+        libgsl-dev \
+        libmpfr-dev \
+        perl \
+        python3-dev \
+        automake \
+        libtool \
+        pkg-config \
+    && cd /tmp \
+    && wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_5_x/ViennaRNA-2.5.1.tar.gz \
+    && tar -xzf ViennaRNA-2.5.1.tar.gz \
+    && cd ViennaRNA-2.5.1 \
+    && ./configure --without-perl --without-python \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig) \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/*
+
+# CracklingPlusPlusのクローンとビルド
+WORKDIR /app
+RUN git clone https://github.com/bmds-lab/CracklingPlusPlus.git
+WORKDIR /app/CracklingPlusPlus
+RUN mkdir build && cd build && cmake .. && make -j$(nproc)
+
+# サンプルディレクトリをワークディレクトリに設定
+WORKDIR /app/CracklingPlusPlus/sample
+
+# PATHに必要なバイナリを追加
+ENV PATH="/app/CracklingPlusPlus/build:${PATH}"
+ENV PATH="/app/CracklingPlusPlus/build/ISSLCreateIndex:${PATH}"
+ENV PATH="/app/CracklingPlusPlus/build/ExtractOfftargets:${PATH}"
+ENV PATH="/app/CracklingPlusPlus/build/ISSLScoreOfftargets:${PATH}"
+ENV PATH="/app/CracklingPlusPlus/build/ISSLScoreOfftargetsMMF:${PATH}"
+
+# エントリポイントの設定
+ENTRYPOINT ["/bin/bash"]
