@@ -1,0 +1,18 @@
+FROM condaforge/miniforge3:24.11.3-0
+
+RUN conda create -n getCRISPRY python==3.5.4
+SHELL ["conda", "run", "-n", "getCRISPRY", "/bin/bash", "-c"]
+RUN conda install -c bioconda bowtie2=2.2.6 && \
+    conda clean -a -y
+
+RUN pip install --upgrade pip && \
+    pip install git+https://github.com/asistradition/getCRISPRY.git --no-cache-dir
+
+ENV CONDA_DEFAULT_ENV=getCRISPRY
+ENV PATH=/opt/conda/envs/getCRISPRY/bin:$PATH
+
+RUN echo "conda activate getCRISPRY" >> ~/.bashrc
+
+RUN mkdir -p /app/output && \
+    chmod -R 777 /app/output
+WORKDIR /app/output

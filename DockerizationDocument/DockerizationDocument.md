@@ -41,6 +41,9 @@ git checkout -b TOOL_NAME_docker
 `dockerfiles/TOOL_NAME_dockerfile` ファイルを以下のテンプレートを参考に作成します：
 
 ```dockerfile
+# syntax=docker/dockerfile:1
+# check=error=true
+
 # ベースイメージを指定
 FROM ubuntu:22.04
 
@@ -107,6 +110,30 @@ echo "==================================================="
 echo "Dockerfileのパス: $DOCKERFILE_PATH"
 echo "イメージ名: $IMAGE_NAME:$TAG"
 echo "==================================================="
+
+# Dockerビルドチェックの実行
+echo "Dockerビルドチェックを実行中..."
+docker build . --check -f "$DOCKERFILE_PATH"
+
+# ビルドチェックの確認
+if [ $? -eq 0 ]; then
+    echo "==================================================="
+    echo "ビルドチェックが成功しました！"
+    echo "フルビルドを実行します..."
+    echo "==================================================="
+else
+    echo "==================================================="
+    echo "ビルドチェックで問題が見つかりました。"
+    echo "上記の警告を確認し、Dockerfileを修正してください。"
+    echo "それでもビルドを続行しますか？ (y/n)"
+    read answer
+    if [ "$answer" != "y" ]; then
+        echo "ビルドを中止します。"
+        exit 1
+    fi
+    echo "警告を無視してビルドを続行します。"
+    echo "==================================================="
+fi
 
 # Dockerイメージのビルド
 docker build -t "$IMAGE_NAME:$TAG" -f "$DOCKERFILE_PATH" .
@@ -239,6 +266,93 @@ READMEファイルに以下の情報を記載します：
 - コマンド例と引数の説明
 - トラブルシューティング情報
 
+### 7.4 Docker ビルドチェックの活用
+
+Docker Desktop 4.33以降では、`docker build . --check`コマンドでDockerfileのベストプラクティスに基づいた評価が可能になりました。以下のようにこの機能を活用することを推奨します：
+
+#### 7.4.1 Dockerfileでのビルドチェック設定
+
+```dockerfile
+# syntax=docker/dockerfile:1
+# check=error=true
+
+FROM ubuntu:22.04
+# 以下続く...
+```
+
+ディレクティブの説明:
+- `syntax=docker/dockerfile:1`: 最新のDockerfile構文を使用
+- `check=error=true`: チェックに失敗した場合、エラーとして扱いビルドを失敗させる
+
+#### 7.4.2 特定のビルドチェックルールのスキップ
+
+必要に応じて、特定のチェックルールをスキップすることも可能です：
+
+```dockerfile
+# syntax=docker/dockerfile:1
+# check=skip=JSONArgsRecommended,StageNameCasing
+
+FROM ubuntu:22.04
+# 以下続く...
+```
+
+すべてのルールをスキップ/有効にする設定：
+
+```dockerfile
+# すべてのルールをスキップ
+# check=skip=all
+
+# すべてのルールを有効化
+# check=skip=none
+```
+
+#### 7.4.3 ビルドスクリプトでのチェック実行
+
+ビルドスクリプトでは以下のようにビルドチェックを実行し、結果に応じて処理を分岐することを推奨します：
+
+```bash
+# Dockerビルドチェックの実行
+docker build . --check -f "$DOCKERFILE_PATH"
+
+# チェック結果に応じた処理
+if [ $? -eq 0 ]; then
+    echo "ビルドチェックが成功しました！"
+    # フルビルドを実行...
+else
+    echo "ビルドチェックで問題が見つかりました。"
+    # エラー処理...
+fi
+```
+
+#### 7.4.4 CI/CD パイプラインでの活用
+
+GitHub Actionsなどの自動化パイプラインでビルドチェックを実行する例：
+
+```yaml
+name: Docker Build with Check
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Run Docker Build Check
+        run: docker build . --check -f dockerfiles/TOOL_NAME_dockerfile
+        
+      - name: Build Docker image if check passes
+        if: success()
+        run: docker build -t tool-name:latest -f dockerfiles/TOOL_NAME_dockerfile .
+```
+
+#### 7.4.5 ビルドチェックの利点
+
+- **早期問題検出**: ビルド前に潜在的な問題を特定
+- **ベストプラクティスの適用**: Docker構築のベストプラクティスを自動的に推奨
+- **パフォーマンスの最適化**: 非効率なDockerfileパターンを検出
+- **迅速なフィードバック**: 完全なビルド実行前に素早くチェック（通常1秒未満）
+- **CI/CD統合**: 自動化されたワークフローでの品質保証
+
 ## 8. GitHubとのワークフロー統合
 
 ### 8.1 プルリクエストの作成
@@ -267,15 +381,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Docker Build Check
+        run: docker build . --check -f ./scripts/TOOL_NAME_dockerfile
+      
       - name: Build Docker image
         run: ./scripts/TOOL_NAME_build.sh
+
       - name: Test Docker image
         run: docker run --rm tool-name:latest COMMAND_NAME -h
 ```
 
 ## 9. まとめ
 
-このドキュメントに従うことで、バイオインフォマティクスツールを効率的にDocker化し、異なる環境でも一貫して動作させることができます。Docker化により、依存関係の管理、インストールの複雑さ、環境差異による問題が大幅に軽減されます。
+
+このドキュメントに従うことで、バイオインフォマティクスツールを効率的にDocker化し、異なる環境でも一貫して動作させることができます。Docker化により、依存関係の管理、インストールの複雑さ、環境差異による問題が大幅に軽減されます。特に、Docker build check機能を活用することで、Dockerfileの品質を向上させ、潜在的な問題や最適化の機会を早期に発見することができます。
 
 ---
 

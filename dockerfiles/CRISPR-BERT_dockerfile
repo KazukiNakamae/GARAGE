@@ -1,0 +1,32 @@
+# Use tensorflow base image with Python 3.7
+FROM tensorflow/tensorflow:2.5.0-gpu
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN rm -f /etc/apt/sources.list.d/cuda.list \
+    && apt-get update && apt-get install -y --no-install-recommends wget git \
+    && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb \
+    && dpkg -i cuda-keyring_1.0-1_all.deb \
+    && rm -f cuda-keyring_1.0-1_all.deb
+
+# Clone repository
+RUN git clone https://github.com/BrokenStringx/CRISPR-BERT.git . && \
+    mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir \
+    'keras-bert==0.89' \
+    'keras==2.4.3' \
+    'scikit-learn==0.24.2'
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Default command (show help message)
+CMD ["python", "-c", "print('CRISPR-BERT is ready.\\n\\nAvailable scripts:\\n- model.py: Build and train the model\\n- model_test.py: Test the model\\n- Encoder.py: Encode sequences\\n\\nExample:\\npython model_test.py')"]
+

@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+# check=error=true
+
+# ベースイメージを指定
+FROM ubuntu:22.04
+
+# 必要なパッケージをインストール
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    make \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# crisflashのソースコードをクローン
+RUN git clone https://github.com/crisflash/crisflash.git
+
+# crisflashのビルド
+WORKDIR /app/crisflash
+RUN make
+
+# バイナリをPATHに追加
+ENV PATH="/app/crisflash/bin:${PATH}"
+
+# サンプルデータ用のディレクトリを作成
+RUN mkdir -p /data
+
+# 作業ディレクトリを/dataに変更
+WORKDIR /data
+
+# ヘルプを表示するコマンドをデフォルトで実行
+CMD ["crisflash", "-h"]
