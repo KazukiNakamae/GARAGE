@@ -1,0 +1,34 @@
+#FROM condaforge/miniforge3:24.11.3-0
+
+FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git gcc wget \
+    bzip2 build-essential curl ca-certificates \
+    libsndfile1-dev libgl1 \
+    python3.6 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/wjp15/CRISPert.git /app/CRISPert && \
+    mkdir -p /app/output && \
+    chmod -R 777 /app/output
+
+RUN pip3 install pip --upgrade
+RUN pip3 install 'torch==1.9.0+cu111' 'torchvision==0.10.0+cu111' --index-url https://download.pytorch.org/whl/cu111 --no-cache-dir
+
+RUN mv /app/CRISPert/setup.py /app/CRISPert/setup_back.py
+RUN python3 -c "import re; content = open('/app/CRISPert/setup_back.py').read(); content = re.sub(r'^.*?scripts=.*$', '', content, flags=re.MULTILINE); open('/app/CRISPert/setup.py', 'w').write(content)"
+
+
+RUN pip3 install -e /app/CRISPert/
+RUN pip3 install --no-cache-dir scipy sadice
+#    pandas numpy \
+#    "tokenizers==0.5.0" \
+#    requests \
+#    "tqdm>=4.27" \
+#    "regex!=2019.12.17" \
+#    scikit-learn "transformers==2.5.0"
