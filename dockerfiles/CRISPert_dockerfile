@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     git gcc wget \
     bzip2 build-essential curl ca-certificates \
     libsndfile1-dev libgl1 \
-    python3.6 python3-pip \
+    python3.5.0 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/wjp15/CRISPert.git /app/CRISPert && \
@@ -26,9 +26,4 @@ RUN python3 -c "import re; content = open('/app/CRISPert/setup_back.py').read();
 
 RUN pip3 install -e /app/CRISPert/
 RUN pip3 install --no-cache-dir scipy sadice
-#    pandas numpy \
-#    "tokenizers==0.5.0" \
-#    requests \
-#    "tqdm>=4.27" \
-#    "regex!=2019.12.17" \
-#    scikit-learn "transformers==2.5.0"
+
