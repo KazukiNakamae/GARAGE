@@ -1,0 +1,1 @@
+docker build -t garagecollection/hicrispr:latest -f ./dockerfiles/hicrispr_dockerfile

@@ -1,0 +1,34 @@
+# syntax=docker/dockerfile:1.4
+ARG PLATFORM=linux/amd64
+FROM --platform=${PLATFORM} condaforge/miniforge3:24.11.3-0
+
+WORKDIR /work
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a conda environment for HiCRISPR
+RUN conda create -n hicrispr python=3.7 -y && \
+    conda clean --all -f -y
+
+# Activate the environment and install pipenv
+ENV PATH /opt/conda/envs/hicrispr/bin:$PATH
+RUN pip install pipenv
+
+# Clone the HiCRISPR repository
+RUN git clone https://github.com/welkergroup/HiCRISPR.git /work/HiCRISPR
+
+WORKDIR /work/HiCRISPR
+
+# Install HiCRISPR dependencies using pipenv
+RUN pipenv install --system --skip-lock
+
+# Ensure the conda environment is activated for subsequent commands
+SHELL ["conda", "run", "-n", "hicrispr", "/bin/bash", "-c"]
+
+# Verify installation (optional, but good for debugging)
+RUN conda run -n hicrispr python -c "import hicrispr; print('HiCRISPR installed successfully!')"
+
