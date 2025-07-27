@@ -1,0 +1,16 @@
+ARG PLATFORM=linux/amd64
+FROM --platform=${PLATFORM} condaforge/miniforge3:24.11.3-0
+
+WORKDIR /work
+
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/vaprilyanto/crop.git
+
+WORKDIR /work/crop
+
+RUN chmod +x core.sh crop.sh

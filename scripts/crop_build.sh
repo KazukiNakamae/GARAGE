@@ -1,0 +1,1 @@
+docker buildx build --load -t garagecollection/crop:latest -f ./dockerfiles/crop_dockerfile .
