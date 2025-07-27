@@ -1,0 +1,17 @@
+ARG PLATFORM=linux/amd64
+FROM --platform=${PLATFORM} condaforge/miniforge3:24.11.3-0
+
+WORKDIR /work
+
+# Install git and perl
+RUN apt-get update &&     apt-get install -y git perl python3-dev build-essential &&     rm -rf /var/lib/apt/lists/*
+
+# Clone the repository
+RUN git clone https://github.com/keoughkath/AlleleAnalyzer.git
+
+# Install python dependencies directly into the base environment
+RUN conda install -y pytest pandas numpy &&     conda clean -a -y
+
+# Set up the environment to be active on login
+RUN echo "source /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
+

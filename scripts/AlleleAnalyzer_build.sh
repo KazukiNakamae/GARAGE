@@ -1,0 +1,1 @@
+docker build -t garagecollection/alleleanalyzer:latest -f ./dockerfiles/AlleleAnalyzer_dockerfile .
